@@ -322,11 +322,9 @@ jobs:
           echo "=========================================="
       
       - name: Send Slack notification
-        if: always()
-        uses: slackapi/slack-github-action@v1
+        if: always() && secrets.SLACK_WEBHOOK_URL != ''
+        uses: slackapi/slack-github-action@v2.0.0
         with:
-          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
-          webhook-type: incoming-webhook
           payload: |
             {
               "text": "Deployment Status: ${{ job.status }}",
