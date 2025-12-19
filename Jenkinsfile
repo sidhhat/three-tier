@@ -123,23 +123,27 @@ pipeline {
                                 echo "📥 Pulling new image..."
                                 docker pull ${DOCKER_IMAGE}:latest
                                 
-                                # Stop all containers using port ${APP_PORT}
-                                echo "🔍 Checking for containers on port ${APP_PORT}..."
+                                # Remove container by name if it exists
+                                echo "🔍 Checking for existing ${CONTAINER_NAME} container..."
+                                if docker ps -a --format "{{.Names}}" | grep -q "^${CONTAINER_NAME}\$"; then
+                                    echo "🗑️ Removing existing ${CONTAINER_NAME} container..."
+                                    docker rm -f ${CONTAINER_NAME} || true
+                                fi
+                                
+                                # Clean up any other containers on port ${APP_PORT}
+                                echo "🔍 Checking for other containers on port ${APP_PORT}..."
                                 CONTAINERS=\$(docker ps -a --filter "publish=${APP_PORT}" --format "{{.Names}}")
                                 if [ ! -z "\$CONTAINERS" ]; then
-                                    echo "🛑 Stopping containers: \$CONTAINERS"
-                                    echo "\$CONTAINERS" | xargs -r docker stop || true
                                     echo "🗑️ Removing containers: \$CONTAINERS"
                                     echo "\$CONTAINERS" | xargs -r docker rm -f || true
                                 fi
                                 
                                 # Force kill any process on port ${APP_PORT}
-                                echo "🔫 Force killing processes on port ${APP_PORT}..."
-                                sudo fuser -k ${APP_PORT}/tcp || true
+                                echo "🔫 Killing processes on port ${APP_PORT}..."
+                                sudo fuser -k ${APP_PORT}/tcp 2>/dev/null || true
                                 
-                                # Wait for port to be fully released
-                                echo "⏳ Waiting for port to be released..."
-                                sleep 5
+                                # Wait for cleanup
+                                sleep 3
                                 
                                 # Start new container
                                 echo "🚀 Starting new container..."
@@ -206,23 +210,27 @@ pipeline {
                                 echo "📥 Pulling new image..."
                                 docker pull ${DOCKER_IMAGE}:latest
                                 
-                                # Stop all containers using port ${APP_PORT}
-                                echo "🔍 Checking for containers on port ${APP_PORT}..."
+                                # Remove container by name if it exists
+                                echo "🔍 Checking for existing ${CONTAINER_NAME} container..."
+                                if docker ps -a --format "{{.Names}}" | grep -q "^${CONTAINER_NAME}\$"; then
+                                    echo "🗑️ Removing existing ${CONTAINER_NAME} container..."
+                                    docker rm -f ${CONTAINER_NAME} || true
+                                fi
+                                
+                                # Clean up any other containers on port ${APP_PORT}
+                                echo "🔍 Checking for other containers on port ${APP_PORT}..."
                                 CONTAINERS=\$(docker ps -a --filter "publish=${APP_PORT}" --format "{{.Names}}")
                                 if [ ! -z "\$CONTAINERS" ]; then
-                                    echo "🛑 Stopping containers: \$CONTAINERS"
-                                    echo "\$CONTAINERS" | xargs -r docker stop || true
                                     echo "🗑️ Removing containers: \$CONTAINERS"
                                     echo "\$CONTAINERS" | xargs -r docker rm -f || true
                                 fi
                                 
                                 # Force kill any process on port ${APP_PORT}
-                                echo "🔫 Force killing processes on port ${APP_PORT}..."
-                                sudo fuser -k ${APP_PORT}/tcp || true
+                                echo "🔫 Killing processes on port ${APP_PORT}..."
+                                sudo fuser -k ${APP_PORT}/tcp 2>/dev/null || true
                                 
-                                # Wait for port to be fully released
-                                echo "⏳ Waiting for port to be released..."
-                                sleep 5
+                                # Wait for cleanup
+                                sleep 3
                                 
                                 # Start new container
                                 echo "🚀 Starting new container..."
