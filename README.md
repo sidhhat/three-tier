@@ -32,3 +32,4 @@ Install Nginx reverse proxy to make this application available
 # Deploy v1.0.0
 # Setup complete
 # Ready for deployment
+# Deployment with env configured
