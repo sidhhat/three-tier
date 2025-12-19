@@ -153,27 +153,24 @@ pipeline {
                                     --restart unless-stopped \
                                     ${DOCKER_IMAGE}:latest
                                 
-                                # Wait for new container to be healthy
-                                echo "⏳ Waiting for container to be healthy..."
-                                TIMEOUT=${HEALTH_CHECK_TIMEOUT}
+                                # Wait for application to respond
+                                echo "⏳ Waiting for application to start..."
+                                TIMEOUT=60
                                 COUNTER=0
                                 
                                 while [ \$COUNTER -lt \$TIMEOUT ]; do
-                                    if docker inspect --format=\"{{.State.Health.Status}}\" ${CONTAINER_NAME} 2>/dev/null | grep -q \"healthy\"; then
-                                        echo "✅ Container is healthy"
+                                    if curl -f -s http://localhost:${APP_PORT}/admin/login/ >/dev/null 2>&1; then
+                                        echo "✅ Application is responding"
                                         break
                                     fi
-                                    if [ \$COUNTER -eq \$TIMEOUT ]; then
-                                        echo "❌ Health check timeout"
-                                        docker logs ${CONTAINER_NAME}
+                                    if [ \$COUNTER -ge \$TIMEOUT ]; then
+                                        echo "❌ Application startup timeout"
+                                        docker logs ${CONTAINER_NAME} --tail 50
                                         exit 1
                                     fi
                                     sleep 2
                                     COUNTER=\$((COUNTER + 2))
                                 done
-                                
-                                # Verify deployment
-                                curl -f http://localhost:${APP_PORT}/ || exit 1
                                 
                                 # Cleanup old images
                                 docker image prune -f
@@ -229,27 +226,24 @@ pipeline {
                                     --restart unless-stopped \
                                     ${DOCKER_IMAGE}:latest
                                 
-                                # Wait for new container to be healthy
-                                echo "⏳ Waiting for container to be healthy..."
-                                TIMEOUT=${HEALTH_CHECK_TIMEOUT}
+                                # Wait for application to respond
+                                echo "⏳ Waiting for application to start..."
+                                TIMEOUT=60
                                 COUNTER=0
                                 
                                 while [ \$COUNTER -lt \$TIMEOUT ]; do
-                                    if docker inspect --format=\"{{.State.Health.Status}}\" ${CONTAINER_NAME} 2>/dev/null | grep -q \"healthy\"; then
-                                        echo "✅ Container is healthy"
+                                    if curl -f -s http://localhost:${APP_PORT}/admin/login/ >/dev/null 2>&1; then
+                                        echo "✅ Application is responding"
                                         break
                                     fi
-                                    if [ \$COUNTER -eq \$TIMEOUT ]; then
-                                        echo "❌ Health check timeout"
-                                        docker logs ${CONTAINER_NAME}
+                                    if [ \$COUNTER -ge \$TIMEOUT ]; then
+                                        echo "❌ Application startup timeout"
+                                        docker logs ${CONTAINER_NAME} --tail 50
                                         exit 1
                                     fi
                                     sleep 2
                                     COUNTER=\$((COUNTER + 2))
                                 done
-                                
-                                # Verify deployment
-                                curl -f http://localhost:${APP_PORT}/ || exit 1
                                 
                                 # Cleanup old images
                                 docker image prune -f
