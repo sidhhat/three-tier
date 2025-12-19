@@ -186,18 +186,7 @@ pipeline {
             }
         }
         
-        stage('Verify Server 1') {
-            steps {
-                script {
-                    echo "🔍 Verifying Server 1 deployment..."
-                    sh """
-                        curl -f http://${EC2_SERVER_1}:${APP_PORT}/ || exit 1
-                        echo "✅ Server 1 is responding"
-                    """
-                }
-            }
-        }
-        
+
         stage('Deploy to Server 2') {
             steps {
                 script {
@@ -273,18 +262,7 @@ pipeline {
             }
         }
         
-        stage('Verify Server 2') {
-            steps {
-                script {
-                    echo "🔍 Verifying Server 2 deployment..."
-                    sh """
-                        curl -f http://${EC2_SERVER_2}:${APP_PORT}/ || exit 1
-                        echo "✅ Server 2 is responding"
-                    """
-                }
-            }
-        }
-        
+
         stage('Final Verification') {
             steps {
                 script {
