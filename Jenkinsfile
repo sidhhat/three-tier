@@ -125,56 +125,45 @@ pipeline {
                                 
                                 # Check if container exists
                                 if docker ps -a --format "{{.Names}}" | grep -q "^${CONTAINER_NAME}\$"; then
-                                    echo "🔄 Performing zero-downtime deployment..."
+                                    echo "🔄 Updating existing container..."
                                     
-                                    # Create backup container name
-                                    TIMESTAMP=\$(date +%s)
-                                    OLD_CONTAINER="${CONTAINER_NAME}-old-\$TIMESTAMP"
-                                    
-                                    # Stop and rename old container
+                                    # Stop and remove old container to free port
+                                    echo "🛑 Stopping old container..."
                                     docker stop ${CONTAINER_NAME} || true
-                                    docker rename ${CONTAINER_NAME} \$OLD_CONTAINER || true
                                     
-                                    # Start new container
-                                    docker run -d \
-                                        --name ${CONTAINER_NAME} \
-                                        -p ${APP_PORT}:${APP_PORT} \
-                                        --restart unless-stopped \
-                                        ${DOCKER_IMAGE}:latest
+                                    echo "🗑️ Removing old container..."
+                                    docker rm ${CONTAINER_NAME} || true
                                     
-                                    # Wait for new container to be healthy
-                                    echo "⏳ Waiting for container to be healthy..."
-                                    TIMEOUT=${HEALTH_CHECK_TIMEOUT}
-                                    COUNTER=0
-                                    
-                                    while [ \$COUNTER -lt \$TIMEOUT ]; do
-                                        if docker inspect --format=\"{{.State.Health.Status}}\" ${CONTAINER_NAME} 2>/dev/null | grep -q \"healthy\"; then
-                                            echo "✅ Container is healthy"
-                                            break
-                                        fi
-                                        if [ \$COUNTER -eq \$TIMEOUT ]; then
-                                            echo "❌ Health check timeout"
-                                            docker logs ${CONTAINER_NAME}
-                                            exit 1
-                                        fi
-                                        sleep 2
-                                        COUNTER=\$((COUNTER + 2))
-                                    done
-                                    
-                                    # Remove old container
-                                    echo "🧹 Removing old container..."
-                                    docker stop \$OLD_CONTAINER 2>/dev/null || true
-                                    docker rm \$OLD_CONTAINER 2>/dev/null || true
-                                else
-                                    echo "🆕 First deployment..."
-                                    docker run -d \
-                                        --name ${CONTAINER_NAME} \
-                                        -p ${APP_PORT}:${APP_PORT} \
-                                        --restart unless-stopped \
-                                        ${DOCKER_IMAGE}:latest
-                                    
-                                    sleep 30
+                                    # Wait for port to be released
+                                    sleep 2
                                 fi
+                                
+                                # Start new container
+                                echo "🚀 Starting new container..."
+                                docker run -d \
+                                    --name ${CONTAINER_NAME} \
+                                    -p ${APP_PORT}:${APP_PORT} \
+                                    --restart unless-stopped \
+                                    ${DOCKER_IMAGE}:latest
+                                
+                                # Wait for new container to be healthy
+                                echo "⏳ Waiting for container to be healthy..."
+                                TIMEOUT=${HEALTH_CHECK_TIMEOUT}
+                                COUNTER=0
+                                
+                                while [ \$COUNTER -lt \$TIMEOUT ]; do
+                                    if docker inspect --format=\"{{.State.Health.Status}}\" ${CONTAINER_NAME} 2>/dev/null | grep -q \"healthy\"; then
+                                        echo "✅ Container is healthy"
+                                        break
+                                    fi
+                                    if [ \$COUNTER -eq \$TIMEOUT ]; then
+                                        echo "❌ Health check timeout"
+                                        docker logs ${CONTAINER_NAME}
+                                        exit 1
+                                    fi
+                                    sleep 2
+                                    COUNTER=\$((COUNTER + 2))
+                                done
                                 
                                 # Verify deployment
                                 curl -f http://localhost:${APP_PORT}/ || exit 1
@@ -216,56 +205,45 @@ pipeline {
                                 
                                 # Check if container exists
                                 if docker ps -a --format "{{.Names}}" | grep -q "^${CONTAINER_NAME}\$"; then
-                                    echo "🔄 Performing zero-downtime deployment..."
+                                    echo "🔄 Updating existing container..."
                                     
-                                    # Create backup container name
-                                    TIMESTAMP=\$(date +%s)
-                                    OLD_CONTAINER="${CONTAINER_NAME}-old-\$TIMESTAMP"
-                                    
-                                    # Stop and rename old container
+                                    # Stop and remove old container to free port
+                                    echo "🛑 Stopping old container..."
                                     docker stop ${CONTAINER_NAME} || true
-                                    docker rename ${CONTAINER_NAME} \$OLD_CONTAINER || true
                                     
-                                    # Start new container
-                                    docker run -d \
-                                        --name ${CONTAINER_NAME} \
-                                        -p ${APP_PORT}:${APP_PORT} \
-                                        --restart unless-stopped \
-                                        ${DOCKER_IMAGE}:latest
+                                    echo "🗑️ Removing old container..."
+                                    docker rm ${CONTAINER_NAME} || true
                                     
-                                    # Wait for new container to be healthy
-                                    echo "⏳ Waiting for container to be healthy..."
-                                    TIMEOUT=${HEALTH_CHECK_TIMEOUT}
-                                    COUNTER=0
-                                    
-                                    while [ \$COUNTER -lt \$TIMEOUT ]; do
-                                        if docker inspect --format=\"{{.State.Health.Status}}\" ${CONTAINER_NAME} 2>/dev/null | grep -q \"healthy\"; then
-                                            echo "✅ Container is healthy"
-                                            break
-                                        fi
-                                        if [ \$COUNTER -eq \$TIMEOUT ]; then
-                                            echo "❌ Health check timeout"
-                                            docker logs ${CONTAINER_NAME}
-                                            exit 1
-                                        fi
-                                        sleep 2
-                                        COUNTER=\$((COUNTER + 2))
-                                    done
-                                    
-                                    # Remove old container
-                                    echo "🧹 Removing old container..."
-                                    docker stop \$OLD_CONTAINER 2>/dev/null || true
-                                    docker rm \$OLD_CONTAINER 2>/dev/null || true
-                                else
-                                    echo "🆕 First deployment..."
-                                    docker run -d \
-                                        --name ${CONTAINER_NAME} \
-                                        -p ${APP_PORT}:${APP_PORT} \
-                                        --restart unless-stopped \
-                                        ${DOCKER_IMAGE}:latest
-                                    
-                                    sleep 30
+                                    # Wait for port to be released
+                                    sleep 2
                                 fi
+                                
+                                # Start new container
+                                echo "🚀 Starting new container..."
+                                docker run -d \
+                                    --name ${CONTAINER_NAME} \
+                                    -p ${APP_PORT}:${APP_PORT} \
+                                    --restart unless-stopped \
+                                    ${DOCKER_IMAGE}:latest
+                                
+                                # Wait for new container to be healthy
+                                echo "⏳ Waiting for container to be healthy..."
+                                TIMEOUT=${HEALTH_CHECK_TIMEOUT}
+                                COUNTER=0
+                                
+                                while [ \$COUNTER -lt \$TIMEOUT ]; do
+                                    if docker inspect --format=\"{{.State.Health.Status}}\" ${CONTAINER_NAME} 2>/dev/null | grep -q \"healthy\"; then
+                                        echo "✅ Container is healthy"
+                                        break
+                                    fi
+                                    if [ \$COUNTER -eq \$TIMEOUT ]; then
+                                        echo "❌ Health check timeout"
+                                        docker logs ${CONTAINER_NAME}
+                                        exit 1
+                                    fi
+                                    sleep 2
+                                    COUNTER=\$((COUNTER + 2))
+                                done
                                 
                                 # Verify deployment
                                 curl -f http://localhost:${APP_PORT}/ || exit 1
