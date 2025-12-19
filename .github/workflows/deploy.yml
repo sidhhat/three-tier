@@ -157,7 +157,7 @@ jobs:
             # Pull deployment script if not exists
             if [ ! -f scripts/deploy.sh ]; then
               mkdir -p scripts
-              curl -O https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/scripts/deploy.sh
+              curl -o scripts/deploy.sh https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/scripts/deploy.sh
               chmod +x scripts/deploy.sh
             fi
             
@@ -237,7 +237,7 @@ jobs:
             # Pull deployment script if not exists
             if [ ! -f scripts/deploy.sh ]; then
               mkdir -p scripts
-              curl -O https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/scripts/deploy.sh
+              curl -o scripts/deploy.sh https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/scripts/deploy.sh
               chmod +x scripts/deploy.sh
             fi
             
@@ -320,3 +320,52 @@ jobs:
           echo "Server 1: ${{ needs.deploy-server-1.result }}"
           echo "Server 2: ${{ needs.deploy-server-2.result }}"
           echo "=========================================="
+      
+      - name: Send Slack notification
+        if: always()
+        uses: slackapi/slack-github-action@v1
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "Deployment Status: ${{ job.status }}",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "🚀 Django Notes App Deployment"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Status:*\n${{ job.status }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Branch:*\n${{ github.ref_name }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Commit:*\n${{ github.sha }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Author:*\n${{ github.actor }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Server 1: ${{ needs.deploy-server-1.result }}\nServer 2: ${{ needs.deploy-server-2.result }}"
+                  }
+                }
+              ]
+            }
+        continue-on-error: true
