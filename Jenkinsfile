@@ -124,14 +124,15 @@ pipeline {
                                 docker pull ${DOCKER_IMAGE}:latest
                                 
                                 # Check if container exists
-                                if docker ps -a | grep -q ${CONTAINER_NAME}; then
+                                if docker ps -a --format "{{.Names}}" | grep -q "^${CONTAINER_NAME}\$"; then
                                     echo "🔄 Performing zero-downtime deployment..."
                                     
                                     # Create backup container name
                                     TIMESTAMP=\$(date +%s)
                                     OLD_CONTAINER="${CONTAINER_NAME}-old-\$TIMESTAMP"
                                     
-                                    # Rename old container
+                                    # Stop and rename old container
+                                    docker stop ${CONTAINER_NAME} || true
                                     docker rename ${CONTAINER_NAME} \$OLD_CONTAINER || true
                                     
                                     # Start new container
@@ -214,14 +215,15 @@ pipeline {
                                 docker pull ${DOCKER_IMAGE}:latest
                                 
                                 # Check if container exists
-                                if docker ps -a | grep -q ${CONTAINER_NAME}; then
+                                if docker ps -a --format "{{.Names}}" | grep -q "^${CONTAINER_NAME}\$"; then
                                     echo "🔄 Performing zero-downtime deployment..."
                                     
                                     # Create backup container name
                                     TIMESTAMP=\$(date +%s)
                                     OLD_CONTAINER="${CONTAINER_NAME}-old-\$TIMESTAMP"
                                     
-                                    # Rename old container
+                                    # Stop and rename old container
+                                    docker stop ${CONTAINER_NAME} || true
                                     docker rename ${CONTAINER_NAME} \$OLD_CONTAINER || true
                                     
                                     # Start new container
