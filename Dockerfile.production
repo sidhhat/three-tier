@@ -22,7 +22,7 @@ FROM python:3.9-slim
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PATH=/root/.local/bin:$PATH
+    PATH=/home/appuser/.local/bin:$PATH
 
 WORKDIR /app
 
@@ -38,8 +38,8 @@ RUN apt-get update && \
 RUN useradd -m -u 1000 appuser && \
     chown -R appuser:appuser /app
 
-# Copy Python dependencies from builder
-COPY --from=builder /root/.local /root/.local
+# Copy Python dependencies from builder to appuser home
+COPY --from=builder --chown=appuser:appuser /root/.local /home/appuser/.local
 
 # Copy application code
 COPY --chown=appuser:appuser . .
