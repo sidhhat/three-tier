@@ -31,3 +31,4 @@ Install Nginx reverse proxy to make this application available
 # Trigger deployment
 # Deploy v1.0.0
 # Setup complete
+# Ready for deployment
