@@ -30,3 +30,4 @@ Install Nginx reverse proxy to make this application available
 `sudo apt install nginx`
 # Trigger deployment
 # Deploy v1.0.0
+# Setup complete
